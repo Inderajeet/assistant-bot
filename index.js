@@ -16,7 +16,7 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-const tgBot = new TelegramBot(config.telegramBotToken, { 
+const tgBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
   polling: true  // Changed to true to handle callbacks
 });
 
