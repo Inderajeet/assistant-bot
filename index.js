@@ -3,6 +3,18 @@ const TelegramBot = require("node-telegram-bot-api");
 const schedule = require("./schedule.json");
 const tracker = require("./tracker");
 const config = require("./config");
+const express = require("express");
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("Bot is running 🚀");
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 const tgBot = new TelegramBot(config.telegramBotToken, { 
   polling: true  // Changed to true to handle callbacks
