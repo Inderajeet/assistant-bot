@@ -2,7 +2,7 @@ const { google } = require("googleapis");
 const config = require("./config");
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: config.googleCredentialsFile,
+  keyFile: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
   scopes: ["https://www.googleapis.com/auth/spreadsheets"]
 });
 

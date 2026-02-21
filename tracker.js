@@ -9,7 +9,7 @@ const SHEET_NAME = 'Weekly Tracker'; // Replace with your sheet name if differen
 async function getAuthClient() {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: 'credentials.json', // Download from Google Cloud Console
+      keyFile: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON), // Download from Google Cloud Console
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
     return await auth.getClient();
