@@ -14,7 +14,7 @@
   { "name": "Dinner", "time": "18:30", "hours": 1 },
   { "name": "UGC Paper 1 Class", "time": "19:30", "hours": 1.5 },
   { "name": "Quick recap / notes", "time": "21:00", "hours": 0.5 },
-  { "name": "Optional project / AI support", "time": "00:10", "hours": 1 },
+  { "name": "Optional project / AI support", "time": "01:02", "hours": 1 },
   { "name": "Wind down", "time": "23:58", "hours": 0.5 },
   { "name": "Sleep", "time": "23:00", "hours": 6.5 }
 ]
