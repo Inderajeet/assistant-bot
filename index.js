@@ -4,10 +4,27 @@ const schedule = require("./schedule.json");
 const tracker = require("./tracker");
 const config = require("./config");
 const express = require("express");
+
 const app = express();
+app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const URL = process.env.RENDER_EXTERNAL_URL; // Provided by Render
 
+// ✅ Telegram bot WITHOUT polling
+const tgBot = new TelegramBot(TOKEN);
+
+// ✅ Setup webhook
+tgBot.setWebHook(`${URL}/bot${TOKEN}`);
+
+app.post(`/bot${TOKEN}`, (req, res) => {
+  tgBot.processUpdate(req.body);
+  res.sendStatus(200);
+});
+
+// Health route for Render + UptimeRobot
 app.get("/", (req, res) => {
   res.send("Bot is running 🚀");
 });
@@ -16,13 +33,11 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-const tgBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
-  polling: true  // Changed to true to handle callbacks
-});
-
 let lastReminderKey = null;
 
-// Send task notification with inline buttons
+// ============================
+// SEND TASK NOTIFICATION
+// ============================
 async function sendTaskNotification(task) {
   const message = `⏰ ${task.name} starts in ${config.reminderOffset} mins.\nDuration: ${task.hours} hrs\nChoose your action:`;
 
@@ -39,13 +54,15 @@ async function sendTaskNotification(task) {
   };
 
   try {
-    await tgBot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, buttons);
+    await tgBot.sendMessage(CHAT_ID, message, buttons);
   } catch (error) {
     console.error("Error sending message:", error);
   }
 }
 
-// Handle button presses
+// ============================
+// BUTTON HANDLER
+// ============================
 tgBot.on("callback_query", async (callbackQuery) => {
   try {
     const messageId = callbackQuery.message.message_id;
@@ -56,40 +73,36 @@ tgBot.on("callback_query", async (callbackQuery) => {
 
     console.log(`Button pressed: ${action} for task: ${taskName}`);
 
-    // Update tracker & Google Sheets
+    // Update tracker + Google Sheets
     await tracker.markTask(taskName, action);
 
-    // Answer callback to remove loading state and show notification
-    await tgBot.answerCallbackQuery(callbackQuery.id, { 
+    await tgBot.answerCallbackQuery(callbackQuery.id, {
       text: `${taskName} marked as ${action}`,
-      show_alert: false 
+      show_alert: false
     });
 
-    // Edit original message to show status
     await tgBot.editMessageText(
-      `✅ Task: ${taskName}\n📊 Status: ${action}\n\nOriginal message: ${messageText}`,
-      { 
-        chat_id: chatId, 
+      `✅ Task: ${taskName}\n📊 Status: ${action}`,
+      {
+        chat_id: chatId,
         message_id: messageId,
-        reply_markup: { inline_keyboard: [] } // Remove buttons
+        reply_markup: { inline_keyboard: [] }
       }
     );
 
-    // Send confirmation to the chat
     await tgBot.sendMessage(
-      process.env.TELEGRAM_CHAT_ID,
+      CHAT_ID,
       `✅ *${taskName}* has been marked as *${action}*`,
       { parse_mode: "Markdown" }
     );
 
   } catch (err) {
     console.error("Error handling button press:", err);
-    
-    // Try to notify user about error
+
     try {
-      await tgBot.answerCallbackQuery(callbackQuery.id, { 
+      await tgBot.answerCallbackQuery(callbackQuery.id, {
         text: "Error processing your request. Please try again.",
-        show_alert: true 
+        show_alert: true
       });
     } catch (e) {
       console.error("Error sending error notification:", e);
@@ -97,15 +110,12 @@ tgBot.on("callback_query", async (callbackQuery) => {
   }
 });
 
-// Handle errors
-tgBot.on("polling_error", (error) => {
-  console.error("Polling error:", error);
-});
-
-// Startup message
+// ============================
+// STARTUP MESSAGE
+// ============================
 async function startBot() {
   try {
-    await tgBot.sendMessage(process.env.TELEGRAM_CHAT_ID, "🚀 Assistant is LIVE (Mon–Sun Mode)");
+    await tgBot.sendMessage(CHAT_ID, "🚀 Assistant is LIVE (Mon–Sun Mode)");
     console.log("Bot started successfully!");
   } catch (error) {
     console.error("Error sending startup message:", error);
@@ -114,7 +124,9 @@ async function startBot() {
 
 startBot();
 
-// REMINDER ENGINE - every minute
+// ============================
+// REMINDER ENGINE
+// ============================
 cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
@@ -123,13 +135,12 @@ cron.schedule("* * * * *", async () => {
     const currentTime = `${currentHour}:${currentMinute}`;
     const todayKey = now.toDateString();
 
-    console.log(`Checking reminders at ${currentTime}...`);
-
     for (let task of schedule) {
       const [hour, minute] = task.time.split(":").map(Number);
 
       let reminderHour = hour;
       let reminderMinute = minute - config.reminderOffset;
+
       if (reminderMinute < 0) {
         reminderMinute += 60;
         reminderHour -= 1;
@@ -142,13 +153,9 @@ cron.schedule("* * * * *", async () => {
 
       if (currentTime === reminderTime) {
         const reminderKey = `${todayKey}-${task.name}`;
-        if (lastReminderKey === reminderKey) {
-          console.log(`Reminder already sent for ${task.name}`);
-          return;
-        }
+        if (lastReminderKey === reminderKey) return;
 
         lastReminderKey = reminderKey;
-        console.log(`Sending reminder for: ${task.name}`);
         await sendTaskNotification(task);
       }
     }
@@ -157,12 +164,15 @@ cron.schedule("* * * * *", async () => {
   }
 });
 
-// WEEKLY REPORT - every Sunday 9 PM
+// ============================
+// WEEKLY REPORT
+// ============================
 cron.schedule("0 21 * * 0", async () => {
   try {
     const report = tracker.getWeeklyReport();
+
     await tgBot.sendMessage(
-      process.env.TELEGRAM_CHAT_ID,
+      CHAT_ID,
       `📊 *Sunday Weekly Report*\n\n✅ Completed: ${report.done}\n📋 Total: ${report.total}\n📈 Performance: ${report.percent}%`,
       { parse_mode: "Markdown" }
     );
