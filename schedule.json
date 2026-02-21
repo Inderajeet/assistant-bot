@@ -1,0 +1,20 @@
+[
+  { "name": "UGC Paper 2 Class", "time": "05:30", "hours": 1.5 },
+  { "name": "Quick snack / freshen up", "time": "07:00", "hours": 0.5 },
+  { "name": "Fundamentals / Teaching prep", "time": "07:30", "hours": 1 },
+  { "name": "Breakfast / unwind", "time": "08:30", "hours": 1 },
+  { "name": "Freelance coding / project (Morning)", "time": "09:30", "hours": 2 },
+  { "name": "Break / light walk", "time": "11:30", "hours": 0.5 },
+  { "name": "Personal learning / UGC prep", "time": "12:00", "hours": 0.75 },
+  { "name": "Lunch", "time": "12:45", "hours": 0.75 },
+  { "name": "Freelance coding / project (Afternoon)", "time": "13:30", "hours": 2 },
+  { "name": "Break / tea", "time": "15:30", "hours": 0.5 },
+  { "name": "Research / Literature", "time": "16:00", "hours": 1 },
+  { "name": "Fundamentals / Teaching prep (Evening)", "time": "17:00", "hours": 1.5 },
+  { "name": "Dinner", "time": "18:30", "hours": 1 },
+  { "name": "UGC Paper 1 Class", "time": "19:30", "hours": 1.5 },
+  { "name": "Quick recap / notes", "time": "21:00", "hours": 0.5 },
+  { "name": "Optional project / AI support", "time": "00:10", "hours": 1 },
+  { "name": "Wind down", "time": "23:58", "hours": 0.5 },
+  { "name": "Sleep", "time": "23:00", "hours": 6.5 }
+]
