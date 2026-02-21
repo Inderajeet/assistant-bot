@@ -27,7 +27,7 @@ async function sendTaskNotification(task) {
   };
 
   try {
-    await tgBot.sendMessage(config.telegramChatId, message, buttons);
+    await tgBot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, buttons);
   } catch (error) {
     console.error("Error sending message:", error);
   }
@@ -65,7 +65,7 @@ tgBot.on("callback_query", async (callbackQuery) => {
 
     // Send confirmation to the chat
     await tgBot.sendMessage(
-      config.telegramChatId,
+      process.env.TELEGRAM_CHAT_ID,
       `✅ *${taskName}* has been marked as *${action}*`,
       { parse_mode: "Markdown" }
     );
@@ -93,7 +93,7 @@ tgBot.on("polling_error", (error) => {
 // Startup message
 async function startBot() {
   try {
-    await tgBot.sendMessage(config.telegramChatId, "🚀 Assistant is LIVE (Mon–Sun Mode)");
+    await tgBot.sendMessage(process.env.TELEGRAM_CHAT_ID, "🚀 Assistant is LIVE (Mon–Sun Mode)");
     console.log("Bot started successfully!");
   } catch (error) {
     console.error("Error sending startup message:", error);
@@ -150,7 +150,7 @@ cron.schedule("0 21 * * 0", async () => {
   try {
     const report = tracker.getWeeklyReport();
     await tgBot.sendMessage(
-      config.telegramChatId,
+      process.env.TELEGRAM_CHAT_ID,
       `📊 *Sunday Weekly Report*\n\n✅ Completed: ${report.done}\n📋 Total: ${report.total}\n📈 Performance: ${report.percent}%`,
       { parse_mode: "Markdown" }
     );

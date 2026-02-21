@@ -2,7 +2,7 @@ const { google } = require('googleapis');
 const {config} = require('./config');
 
 // Google Sheets configuration
-const SPREADSHEET_ID = config.spreadsheetId; // Replace with your Google Sheet ID
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID; // Replace with your Google Sheet ID
 const SHEET_NAME = 'Weekly Tracker'; // Replace with your sheet name if different
 
 // Authenticate with Google Sheets
